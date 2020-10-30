@@ -38,7 +38,7 @@ class Emulator {
     try {
       while (isRunning) {
         var cycle = cpu.run();
-        var renderPixels = ppu.run(cycle);
+        var renderPixels = ppu.run(cycle * 3);
 
         // ピクセル情報が帰ってきている場合
         if (renderPixels != null) {

@@ -37,7 +37,7 @@ class Cpu {
     // }
 
     // サイクル数を返す
-    return 1;
+    return opInfo.cycle;
   }
 
   int _fetchPC() {
