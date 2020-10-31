@@ -4,7 +4,8 @@ import 'dart:ui' as ui;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_nes/emulator/emulator_isolate.dart';
+import 'package:flutter_nes/isolates/emulator.dart';
+import 'package:flutter_nes/isolates/messages/emulator_messages.dart';
 
 class EmulatorPageWidget extends StatefulWidget {
   @override
@@ -12,43 +13,17 @@ class EmulatorPageWidget extends StatefulWidget {
 }
 
 class _EmulatorPageState extends State<EmulatorPageWidget> {
-  ValueNotifier<ui.Image> notifier = ValueNotifier(null); 
+  _EmulatorController controller;
 
-  ReceivePort emulatorReceivePort;
-  SendPort emulatorSendPort;
 
   @override
   void initState() {
     super.initState();
 
-    emulatorReceivePort = ReceivePort();
-    Isolate.spawn(emulatorIsolateMain, emulatorReceivePort.sendPort);
- 
-    emulatorReceivePort.listen((m) {
-      var message = m as EmulatorMessage;
-      switch(message.type) {
-        case EmulatorMessageType.INITIALIZE:
-          emulatorSendPort = message.data as SendPort;
-
-          // エミュレータ初期化        
-          Uint8List romBytes = ModalRoute.of(context).settings.arguments;
-          emulatorSendPort.send(
-            EmulatorMessage(
-              EmulatorMessageType.START,
-              romBytes
-            )
-          );
-          break;
-
-        case EmulatorMessageType.UPDATE_FRAME:
-          _convertFrameToImage(message.data).then((ui.Image image) {
-            notifier.value = image;
-          });
-          break;
-
-        default:
-          break;
-      }
+    controller = _EmulatorController();
+    Future.delayed(Duration.zero, () {
+      Uint8List romBytes = ModalRoute.of(context).settings.arguments;
+      controller.initialize(romBytes);
     });
   }
 
@@ -62,7 +37,7 @@ class _EmulatorPageState extends State<EmulatorPageWidget> {
               height: double.infinity,
               color: Colors.black38,
               child: CustomPaint(
-                painter: _EmulatorDrawPainter(notifier),
+                painter: _EmulatorDrawPainter(controller),
               )
             )
           ),
@@ -88,15 +63,68 @@ class _EmulatorPageState extends State<EmulatorPageWidget> {
   }
 }
 
+class _EmulatorController extends ChangeNotifier {
+  Uint8List romBytes;
+
+  ReceivePort emulatorReceivePort;
+  SendPort emulatorSendPort;
+
+  ui.Image currentFrame;
+
+  _EmulatorController();
+
+  void initialize(Uint8List romBytes) {
+    this.romBytes = romBytes;
+    _initializeEmulatorIsolate();
+  }
+
+  void _initializeEmulatorIsolate() {
+    emulatorReceivePort = ReceivePort();
+    Isolate.spawn(emulatorIsolateMain, emulatorReceivePort.sendPort);
+
+    emulatorReceivePort.listen((data) {
+      var message = data as EmulatorMessageByChild;
+      switch(message.type) {
+        case EmulatorMessageByChildType.INITIALIZE:
+          _onRecvInitialize(message.data);
+          break;
+
+        case EmulatorMessageByChildType.UPDATE_FRAME:
+          _onRecvUpdateFrame(message.data);
+          break;
+      }      
+    });
+  }
+
+  void _onRecvInitialize(SendPort emulatorSendPort) {
+    this.emulatorSendPort = emulatorSendPort;
+
+    // エミュレータ初期化
+    emulatorSendPort.send(
+      EmulatorMessageByParent(
+        EmulatorMessageByParentType.START,
+        romBytes
+      )
+    );
+  }
+
+  void _onRecvUpdateFrame(Uint8List framePixels) {
+    _convertFrameToImage(framePixels).then((ui.Image image) {
+      currentFrame = image;
+      notifyListeners();
+    });
+  }
+}
+
 class _EmulatorDrawPainter extends CustomPainter {
-  ValueNotifier<ui.Image> notifier;
+  _EmulatorController controller;
   Paint paintObject;
 
   int framePerSec = 0;
   int lastDrawTime = 0;
   int frameDrawCount = 0;
 
-  _EmulatorDrawPainter(this.notifier): super(repaint: notifier) {
+  _EmulatorDrawPainter(this.controller): super(repaint: controller) {
     paintObject = Paint();
   }
 
@@ -111,12 +139,14 @@ class _EmulatorDrawPainter extends CustomPainter {
     }
 
     canvas.save();
-    if (notifier.value != null) {
-      var scale = (size.width / 256 < size.height / 240) ? size.width / 256 : size.height / 240;
-      canvas.scale(scale);      
-      canvas.drawImage(notifier.value, Offset.zero, paintObject);
+    var scale = (size.width / 256 < size.height / 240) ? size.width / 256 : size.height / 240;
+    canvas.scale(scale);      
+
+    if (controller.currentFrame != null) {
+      canvas.drawImage(controller.currentFrame, Offset.zero, paintObject);
     }
 
+    // Draw fps
     TextSpan span = new TextSpan(style: new TextStyle(color: Colors.white, fontSize: 8.0), text: "fps: $framePerSec");
     TextPainter tp = new TextPainter(text: span, textAlign: TextAlign.left, textDirection: TextDirection.ltr);
     tp.layout();
