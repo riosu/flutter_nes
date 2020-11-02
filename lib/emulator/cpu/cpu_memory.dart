@@ -29,7 +29,8 @@ class CpuMemory {
     
     } else if (address < 0x4020) {
       // API I/O, PAD
-      throw new MemoryAccessNotImplementedError(MemoryAccessType.CPU, address);
+      return 0xFF;
+      // throw new MemoryAccessNotImplementedError(MemoryAccessType.CPU, address);
     
     } else if (address < 0x6000) {
       // 拡張ROM
@@ -51,7 +52,8 @@ class CpuMemory {
   void write(int address, int data) {
     if (address < 0x0800) {
       // WRAM
-      throw new MemoryAccessNotImplementedError(MemoryAccessType.CPU, address);
+      wram[address] = data;
+      return;
 
     } else if (address < 0x2000) {
       // WRAMのミラー
@@ -93,6 +95,8 @@ class CpuMemory {
           emulator.ppu.registers.ppuData = data;  
           return;
       }
+    } else if (address < 0x4016) {
+      return;
     }
 
     throw new MemoryAccessError(MemoryAccessType.CPU, address);

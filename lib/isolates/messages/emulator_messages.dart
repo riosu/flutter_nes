@@ -15,6 +15,7 @@ class EmulatorMessageByChild {
 
 enum EmulatorMessageByParentType {
   START,
+  SET_DEBUG_CPU_LOG,
 }
 
 enum EmulatorMessageByChildType {

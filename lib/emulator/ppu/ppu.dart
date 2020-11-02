@@ -13,7 +13,7 @@ class Ppu {
   PpuMemory mem;
 
   int cycle = 0;
-  int line = 0;
+  int line = 241;
 
   Ppu(this.emulator) {
     mem = new PpuMemory(emulator.rom);

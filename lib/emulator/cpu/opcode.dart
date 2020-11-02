@@ -68,6 +68,16 @@ enum OpType {
   TXA,
   TXS,
   TYA,
+
+  // Unofficial opcodes
+  LAX,
+  SAX,
+  DCP,
+  ISB,
+  SLO,
+  RLA,
+  SRE,
+  RRA
 }
 
 enum OpAddressingMode {
@@ -168,7 +178,7 @@ Map<int, OpInfo> _opMap = {
 
   0xC0: OpInfo(OpType.CPY, OpAddressingMode.Immediate, 2),
   0xC4: OpInfo(OpType.CPY, OpAddressingMode.ZeroPage, 3),
-  0xCC: OpInfo(OpType.CPY, OpAddressingMode.AbsolutePageY, 4),
+  0xCC: OpInfo(OpType.CPY, OpAddressingMode.Absolute, 4),
 
   0xC6: OpInfo(OpType.DEC, OpAddressingMode.ZeroPage, 5),
   0xD6: OpInfo(OpType.DEC, OpAddressingMode.ZeroPageX, 6),
@@ -212,7 +222,7 @@ Map<int, OpInfo> _opMap = {
   0xB1: OpInfo(OpType.LDA, OpAddressingMode.IndirctIndexed, 5),
 
   0xA6: OpInfo(OpType.LDX, OpAddressingMode.ZeroPage, 2),
-  0xB6: OpInfo(OpType.LDX, OpAddressingMode.ZeroPageX, 3),
+  0xB6: OpInfo(OpType.LDX, OpAddressingMode.ZeroPageY, 3),
   0xAE: OpInfo(OpType.LDX, OpAddressingMode.Absolute, 4),
   0xBE: OpInfo(OpType.LDX, OpAddressingMode.AbsolutePageY, 4),
   0xA2: OpInfo(OpType.LDX, OpAddressingMode.Immediate, 4),
@@ -288,7 +298,7 @@ Map<int, OpInfo> _opMap = {
   0x91: OpInfo(OpType.STA, OpAddressingMode.IndirctIndexed, 6),
 
   0x86: OpInfo(OpType.STX, OpAddressingMode.ZeroPage, 3),
-  0x96: OpInfo(OpType.STX, OpAddressingMode.ZeroPageX, 4),
+  0x96: OpInfo(OpType.STX, OpAddressingMode.ZeroPageY, 4),
   0x8E: OpInfo(OpType.STX, OpAddressingMode.Absolute, 4),
 
   0x84: OpInfo(OpType.STY, OpAddressingMode.ZeroPage, 3),
@@ -306,4 +316,99 @@ Map<int, OpInfo> _opMap = {
   0x9A: OpInfo(OpType.TXS, OpAddressingMode.Implied, 2),
 
   0x98: OpInfo(OpType.TYA, OpAddressingMode.Implied, 2),
+
+  // Unofficial opcodes
+  0xA3: OpInfo(OpType.LAX, OpAddressingMode.IndexedIndirect, 6),
+  0xA7: OpInfo(OpType.LAX, OpAddressingMode.ZeroPage, 3),
+  0xAF: OpInfo(OpType.LAX, OpAddressingMode.Absolute, 4),
+  0xB3: OpInfo(OpType.LAX, OpAddressingMode.IndirctIndexed, 5),
+  0xB7: OpInfo(OpType.LAX, OpAddressingMode.ZeroPageY, 4),
+  0xBF: OpInfo(OpType.LAX, OpAddressingMode.AbsolutePageY, 4),
+  
+  0x83: OpInfo(OpType.SAX, OpAddressingMode.IndexedIndirect, 6),
+  0x87: OpInfo(OpType.SAX, OpAddressingMode.ZeroPage, 3),
+  0x8F: OpInfo(OpType.SAX, OpAddressingMode.Absolute, 4),
+  0x97: OpInfo(OpType.SAX, OpAddressingMode.ZeroPageY, 4),
+
+  0xEB: OpInfo(OpType.SBC, OpAddressingMode.Immediate, 2),
+
+  0xC3: OpInfo(OpType.DCP, OpAddressingMode.IndexedIndirect, 8),
+  0xC7: OpInfo(OpType.DCP, OpAddressingMode.ZeroPage, 5),
+  0xCF: OpInfo(OpType.DCP, OpAddressingMode.Absolute, 6),
+  0xD3: OpInfo(OpType.DCP, OpAddressingMode.IndirctIndexed, 8),
+  0xD7: OpInfo(OpType.DCP, OpAddressingMode.ZeroPageX, 6),
+  0xDB: OpInfo(OpType.DCP, OpAddressingMode.AbsolutePageY, 7),
+  0xDF: OpInfo(OpType.DCP, OpAddressingMode.AbsolutePageX, 7),
+
+  0xE3: OpInfo(OpType.ISB, OpAddressingMode.IndexedIndirect, 8),
+  0xE7: OpInfo(OpType.ISB, OpAddressingMode.ZeroPage, 5),
+  0xEF: OpInfo(OpType.ISB, OpAddressingMode.Absolute, 6),
+  0xF3: OpInfo(OpType.ISB, OpAddressingMode.IndirctIndexed, 8),
+  0xF7: OpInfo(OpType.ISB, OpAddressingMode.ZeroPageX, 6),
+  0xFB: OpInfo(OpType.ISB, OpAddressingMode.AbsolutePageY, 7),
+  0xFF: OpInfo(OpType.ISB, OpAddressingMode.AbsolutePageX, 7),
+
+  0x03: OpInfo(OpType.SLO, OpAddressingMode.IndexedIndirect, 8),
+  0x07: OpInfo(OpType.SLO, OpAddressingMode.ZeroPage, 5),
+  0x0F: OpInfo(OpType.SLO, OpAddressingMode.Absolute, 6),
+  0x13: OpInfo(OpType.SLO, OpAddressingMode.IndirctIndexed, 8),
+  0x17: OpInfo(OpType.SLO, OpAddressingMode.ZeroPageX, 6),
+  0x1B: OpInfo(OpType.SLO, OpAddressingMode.AbsolutePageY, 7),
+  0x1F: OpInfo(OpType.SLO, OpAddressingMode.AbsolutePageX, 7),
+
+  0x23: OpInfo(OpType.RLA, OpAddressingMode.IndexedIndirect, 8),
+  0x27: OpInfo(OpType.RLA, OpAddressingMode.ZeroPage, 5),
+  0x2F: OpInfo(OpType.RLA, OpAddressingMode.Absolute, 6),
+  0x33: OpInfo(OpType.RLA, OpAddressingMode.IndirctIndexed, 8),
+  0x37: OpInfo(OpType.RLA, OpAddressingMode.ZeroPageX, 6),
+  0x3B: OpInfo(OpType.RLA, OpAddressingMode.AbsolutePageY, 7),
+  0x3F: OpInfo(OpType.RLA, OpAddressingMode.AbsolutePageX, 7),
+
+  0x43: OpInfo(OpType.SRE, OpAddressingMode.IndexedIndirect, 8),
+  0x47: OpInfo(OpType.SRE, OpAddressingMode.ZeroPage, 5),
+  0x4F: OpInfo(OpType.SRE, OpAddressingMode.Absolute, 6),
+  0x53: OpInfo(OpType.SRE, OpAddressingMode.IndirctIndexed, 8),
+  0x57: OpInfo(OpType.SRE, OpAddressingMode.ZeroPageX, 6),
+  0x5B: OpInfo(OpType.SRE, OpAddressingMode.AbsolutePageY, 7),
+  0x5F: OpInfo(OpType.SRE, OpAddressingMode.AbsolutePageX, 7),
+
+  0x63: OpInfo(OpType.RRA, OpAddressingMode.IndexedIndirect, 8),
+  0x67: OpInfo(OpType.RRA, OpAddressingMode.ZeroPage, 5),
+  0x6F: OpInfo(OpType.RRA, OpAddressingMode.Absolute, 6),
+  0x73: OpInfo(OpType.RRA, OpAddressingMode.IndirctIndexed, 8),
+  0x77: OpInfo(OpType.RRA, OpAddressingMode.ZeroPageX, 6),
+  0x7B: OpInfo(OpType.RRA, OpAddressingMode.AbsolutePageY, 7),
+  0x7F: OpInfo(OpType.RRA, OpAddressingMode.AbsolutePageX, 7),
+
+  0x1A: OpInfo(OpType.NOP, OpAddressingMode.Implied, 2),
+  0x3A: OpInfo(OpType.NOP, OpAddressingMode.Implied, 2),
+  0x5A: OpInfo(OpType.NOP, OpAddressingMode.Implied, 2),
+  0x7A: OpInfo(OpType.NOP, OpAddressingMode.Implied, 2),
+  0xDA: OpInfo(OpType.NOP, OpAddressingMode.Implied, 2),
+  0xFA: OpInfo(OpType.NOP, OpAddressingMode.Implied, 2),
+
+  // SKB (NOPと同様なにも処理しないが、もうひとつFetchする)
+  0x80: OpInfo(OpType.NOP, OpAddressingMode.Immediate, 2),
+  0x82: OpInfo(OpType.NOP, OpAddressingMode.Immediate, 2),
+  0x89: OpInfo(OpType.NOP, OpAddressingMode.Immediate, 2),
+  0xC2: OpInfo(OpType.NOP, OpAddressingMode.Immediate, 2),
+  0xE2: OpInfo(OpType.NOP, OpAddressingMode.Immediate, 2),
+
+  // IGN (NOPと同様なにも処理しないが、メモリから値を読み込む)
+  0x0C: OpInfo(OpType.NOP, OpAddressingMode.Absolute, 4),
+  0x1C: OpInfo(OpType.NOP, OpAddressingMode.AbsolutePageX, 4),
+  0x3C: OpInfo(OpType.NOP, OpAddressingMode.AbsolutePageX, 4),
+  0x5C: OpInfo(OpType.NOP, OpAddressingMode.AbsolutePageX, 4),
+  0x7C: OpInfo(OpType.NOP, OpAddressingMode.AbsolutePageX, 4),
+  0xDC: OpInfo(OpType.NOP, OpAddressingMode.AbsolutePageX, 4),
+  0xFC: OpInfo(OpType.NOP, OpAddressingMode.AbsolutePageX, 4),
+  0x04: OpInfo(OpType.NOP, OpAddressingMode.ZeroPage, 3),
+  0x44: OpInfo(OpType.NOP, OpAddressingMode.ZeroPage, 3),
+  0x64: OpInfo(OpType.NOP, OpAddressingMode.ZeroPage, 3),
+  0x14: OpInfo(OpType.NOP, OpAddressingMode.ZeroPageX, 4),
+  0x34: OpInfo(OpType.NOP, OpAddressingMode.ZeroPageX, 4),
+  0x54: OpInfo(OpType.NOP, OpAddressingMode.ZeroPageX, 4),
+  0x74: OpInfo(OpType.NOP, OpAddressingMode.ZeroPageX, 4),
+  0xD4: OpInfo(OpType.NOP, OpAddressingMode.ZeroPageX, 4),
+  0xF4: OpInfo(OpType.NOP, OpAddressingMode.ZeroPageX, 4),
 };

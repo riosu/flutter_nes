@@ -12,7 +12,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: "/",
+      // initialRoute: "/",
+      initialRoute: "/emulator",
       routes: <String, WidgetBuilder> {
         "/": (context) => TopPageWidget(),
         "/stripe": (context) => StripePageWidget(),

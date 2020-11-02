@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_nes/isolates/emulator.dart';
 import 'package:flutter_nes/isolates/messages/emulator_messages.dart';
 
@@ -22,8 +23,13 @@ class _EmulatorPageState extends State<EmulatorPageWidget> {
 
     controller = _EmulatorController();
     Future.delayed(Duration.zero, () {
-      Uint8List romBytes = ModalRoute.of(context).settings.arguments;
-      controller.initialize(romBytes);
+      // Uint8List romBytes = ModalRoute.of(context).settings.arguments;
+      // controller.initialize(romBytes);
+      rootBundle.loadString("./roms/nestest.log").then((log) => {
+        rootBundle.load("./roms/nestest.nes").then((rom) => {
+          controller.initialize(rom.buffer.asUint8List(), log)
+        })
+      });
     });
   }
 
@@ -41,30 +47,32 @@ class _EmulatorPageState extends State<EmulatorPageWidget> {
               )
             )
           ),
-          Container(
-            width: 300.0,
-            child: Container(
-              color: Colors.black12,
-              width: double.infinity,
-              child: Padding(
-                padding: EdgeInsets.all(10.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Text("Emulator Status Widget")
-                  ]
-                )
-              ),
-            ),
-          )
+          // Container(
+          //   width: 300.0,
+          //   child: Container(
+          //     color: Colors.black12,
+          //     width: double.infinity,
+          //     child: Padding(
+          //       padding: EdgeInsets.all(10.0),
+          //       child: Column(
+          //         mainAxisAlignment: MainAxisAlignment.start,
+          //         children: <Widget>[
+          //           Text("Emulator Status Widget")
+          //         ]
+          //       )
+          //     ),
+          //   ),
+          // )
         ]
       ),
     );
   }
 }
 
+
 class _EmulatorController extends ChangeNotifier {
   Uint8List romBytes;
+  String debugCPULog;
 
   ReceivePort emulatorReceivePort;
   SendPort emulatorSendPort;
@@ -73,8 +81,9 @@ class _EmulatorController extends ChangeNotifier {
 
   _EmulatorController();
 
-  void initialize(Uint8List romBytes) {
+  void initialize(Uint8List romBytes, [String debugCPULog]) {
     this.romBytes = romBytes;
+    this.debugCPULog = debugCPULog;
     _initializeEmulatorIsolate();
   }
 
@@ -99,7 +108,17 @@ class _EmulatorController extends ChangeNotifier {
   void _onRecvInitialize(SendPort emulatorSendPort) {
     this.emulatorSendPort = emulatorSendPort;
 
-    // エミュレータ初期化
+    // デバッグログがある場合はIsolateにわたす
+    if (debugCPULog != null) {
+      emulatorSendPort.send(
+        EmulatorMessageByParent(
+          EmulatorMessageByParentType.SET_DEBUG_CPU_LOG,
+          debugCPULog
+        )
+      );
+    }
+
+    // エミュレータ開始
     emulatorSendPort.send(
       EmulatorMessageByParent(
         EmulatorMessageByParentType.START,

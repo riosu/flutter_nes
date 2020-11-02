@@ -37,3 +37,11 @@ class MemoryAccessNotImplementedError extends Error {
 
   String toString() => "MemoryAccessNotImplementedError: $type, 0x${address.toRadixString(16).padLeft(4, '0')}";
 }
+
+class CPUDebugLogDifferentError extends Error {
+  final int count;
+
+  CPUDebugLogDifferentError(this.count);
+
+  String toString() => "CPUDebugLogDifferentError: debugCPUCount = $count";
+}

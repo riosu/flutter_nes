@@ -7,22 +7,22 @@ import 'package:flutter_nes/emulator/rom.dart';
 import 'dart:typed_data';
 
 class Emulator {
-  final Rom rom;
 
   bool isRunning = false;
 
+  Rom rom;
   Cpu cpu;
   Ppu ppu;
+
+  List<String> debugCPULogs;
 
   final _onFrameChanedController = new StreamController.broadcast();
   Stream get onFrameChanged => _onFrameChanedController.stream;
 
-  Emulator(Uint8List romBytes) :
-    rom = new Rom(romBytes);
-
-  void start() {
+  void start(Uint8List romBytes) {
     isRunning = true;
 
+    rom = new Rom(romBytes);
     cpu = new Cpu(this);
     ppu = new Ppu(this);
 

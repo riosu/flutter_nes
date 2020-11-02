@@ -26,18 +26,23 @@ class EmulatorIsolate {
       )
     );
 
+    _initEmulator();
+
     await for (var m in childReceivePort) {
       var message = m as EmulatorMessageByParent;
       switch(message.type) {
         case EmulatorMessageByParentType.START:
           _startEmulator(message.data as Uint8List);
           break;
+        case EmulatorMessageByParentType.SET_DEBUG_CPU_LOG:
+          _setDebugCPULog(message.data as String);
+          break;
       }
     }
   }
 
-  void _startEmulator(Uint8List romBytes) {
-    emulator = new Emulator(romBytes);
+  void _initEmulator() {
+    emulator = new Emulator();
     emulator.onFrameChanged.listen((frame) {
       // フレーム更新を通知
       parentSendPort.send(
@@ -47,6 +52,13 @@ class EmulatorIsolate {
         )
       );
     });
-    emulator.start();
+  }
+
+  void _startEmulator(Uint8List romBytes) {
+    emulator.start(romBytes);
+  }
+
+  void _setDebugCPULog(String cpuLog) {
+    emulator.debugCPULogs = cpuLog.split("\n");
   }
 }
